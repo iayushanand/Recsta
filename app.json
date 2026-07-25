@@ -3,20 +3,20 @@
     "name": "my-expo-app",
     "slug": "my-expo-app",
     "version": "1.0.0",
-
     "experiments": {
       "tsconfigPaths": true
     },
-
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-
-    "assetBundlePatterns": ["**/*"],
-
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
-
-    "android": {}
+    "android": {},
+    "plugins": [
+      "expo-web-browser"
+    ]
   }
 }
