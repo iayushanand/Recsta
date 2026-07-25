@@ -1,11 +1,89 @@
-import { View, Text } from "react-native";
+import { useState } from "react";
+import {
+  FlatList,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  SafeAreaView,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+} from "react-native";
+
+import { ONBOARDING } from "../constants/onboarding";
+
+import BackgroundImage from "./onboarding/BackgroundImage";
+
+import GoogleButton from "./onboarding/GoogleButton";
+import ProgressDots from "./onboarding/ProgressDots";
 
 export default function GetStarted() {
+  const { width } = useWindowDimensions();
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const handleScrollEnd = (
+    event: NativeSyntheticEvent<NativeScrollEvent>
+  ) => {
+    const index = Math.round(
+      event.nativeEvent.contentOffset.x / width
+    );
+
+    setCurrentIndex(index);
+  };
+
   return (
-    <View className="flex-1 items-center justify-center bg-black">
-      <Text className="text-3xl font-bold text-blue-500">
-        Welcome to Recsta!
-      </Text>
-    </View>
+    <SafeAreaView className="flex-1 bg-black">
+      <FlatList
+        data={ONBOARDING}
+        keyExtractor={(item) => item.id.toString()}
+        horizontal
+        pagingEnabled
+        bounces={false}
+        decelerationRate="fast"
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={handleScrollEnd}
+        renderItem={({ item, index }) => (
+          <View
+            style={{
+              width,
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <BackgroundImage
+              image={item.image}
+              title={item.title}
+              description={item.description}
+            >
+              {index === ONBOARDING.length - 1 && (
+                <GoogleButton
+                  onPress={() => {
+                    console.log("Google Sign In");
+                  }}
+                />
+              )}
+            </BackgroundImage>
+          </View>
+        )}
+      />
+
+      <View style={styles.dots}>
+        <ProgressDots
+          progress={currentIndex}
+          total={ONBOARDING.length}
+        />
+      </View>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  dots: {
+    position: "absolute",
+    bottom: 42,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+  },
+});
