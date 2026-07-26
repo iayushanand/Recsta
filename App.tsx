@@ -1,6 +1,6 @@
 import "./global.css";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 
@@ -10,6 +10,8 @@ import Genre from "components/Genre";
 import { supabase } from "./lib/supabase";
 
 export default function App() {
+  const [currentScreen, setCurrentScreen] = useState<"get-started" | "genre">("get-started");
+
   useEffect(() => {
     const {
       data: { subscription },
@@ -24,8 +26,11 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      {/* <GetStarted /> */}
-      <Genre />
+      {currentScreen === "get-started" ? (
+        <GetStarted onGetStarted={() => setCurrentScreen("genre")} />
+      ) : (
+        <Genre />
+      )}
       <StatusBar style="dark" />
     </SafeAreaProvider>
   );

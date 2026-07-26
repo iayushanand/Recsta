@@ -16,7 +16,11 @@ import BackgroundImage from "./onboarding/BackgroundImage";
 import GoogleButton from "./onboarding/GoogleButton";
 import ProgressDots from "./onboarding/ProgressDots";
 
-export default function GetStarted() {
+interface GetStartedProps {
+    onGetStarted?: () => void;
+}
+
+export default function GetStarted({ onGetStarted }: GetStartedProps) {
     const { width } = useWindowDimensions();
 
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -65,8 +69,10 @@ export default function GetStarted() {
                                     //         console.error(err);
                                     //     }
                                     // }}
-                                    onPress={async () => {
-                                        // go to genre page
+                                    onPress={() => {
+                                        if (onGetStarted) {
+                                            onGetStarted();
+                                        }
                                     }}
                                 />
                             )}
