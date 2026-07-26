@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "my-expo-app",
+      "name": "Recsta",
       "dependencies": {
         "@better-auth/expo": "^1.6.25",
         "@supabase/supabase-js": "^2.110.8",
