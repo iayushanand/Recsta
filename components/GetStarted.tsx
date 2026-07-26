@@ -58,12 +58,15 @@ export default function GetStarted() {
                         >
                             {index === ONBOARDING.length - 1 && (
                                 <GoogleButton
+                                    // onPress={async () => {
+                                    //     try {
+                                    //         await signInWithGoogle();
+                                    //     } catch (err) {
+                                    //         console.error(err);
+                                    //     }
+                                    // }}
                                     onPress={async () => {
-                                        try {
-                                            await signInWithGoogle();
-                                        } catch (err) {
-                                            console.error(err);
-                                        }
+                                        // go to genre page
                                     }}
                                 />
                             )}

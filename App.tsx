@@ -5,6 +5,8 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 
 import GetStarted from "components/GetStarted";
+import Genre from "components/Genre";
+
 import { supabase } from "./lib/supabase";
 
 export default function App() {
@@ -22,7 +24,8 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <GetStarted />
+      {/* <GetStarted /> */}
+      <Genre />
       <StatusBar style="dark" />
     </SafeAreaProvider>
   );
