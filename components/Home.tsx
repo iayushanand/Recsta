@@ -14,21 +14,17 @@ export default function HomePage() {
 
   return (
     <View className="flex-1 p-2 gap-2 bg-black">
-      {/* First Box with Background Image (2/3 height) */}
       <ImageBackground
         source={require("../assets/images/home/demo.jpg")}
         className="h-2/3 rounded-2xl p-4 justify-end overflow-hidden"
         resizeMode="cover"
         imageStyle={{ opacity: 0.55 }}
       >
-        {/* Bottom Row */}
         <View className="flex-row justify-between items-center w-full">
-          {/* Bottom Left: Runtime & Year */}
           <Text className="text-white text-sm font-medium">
             2h 25m • 2026
           </Text>
 
-          {/* Bottom Right: Rating */}
           <View className="flex-row items-center gap-1 bg-black/50 px-2.5 py-1 rounded-full border border-white/10">
             <Ionicons name="star" size={14} color="#f59e0b" />
             <Text className="text-white text-sm font-semibold">4.5</Text>
@@ -36,7 +32,6 @@ export default function HomePage() {
         </View>
       </ImageBackground>
 
-      {/* Second Box with Glassmorphism Effect & Movie Details (Remaining 1/3 height) */}
       <View className="flex-1 rounded-2xl border border-white/20 overflow-hidden bg-zinc-900/80">
         <BlurView
           intensity={80}
@@ -49,17 +44,14 @@ export default function HomePage() {
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingBottom: 16 }}
           >
-            {/* Title */}
             <Text className="text-white text-2xl font-bold">
               SpiderMan: Brand New Day
             </Text>
 
-            {/* Description */}
             <Text className="text-zinc-300 text-sm mt-1 leading-5">
               The fourth installment in the MCU Spider-Man franchise.
             </Text>
 
-            {/* Genres */}
             <View className="flex-row flex-wrap gap-2 mt-3">
               {genres.map((genre, index) => (
                 <View
@@ -73,7 +65,6 @@ export default function HomePage() {
               ))}
             </View>
 
-            {/* Director */}
             <View className="mt-4 pt-3 border-t border-white/10">
               <Text className="text-zinc-400 text-xs uppercase tracking-wider font-semibold">
                 Director
@@ -83,7 +74,6 @@ export default function HomePage() {
               </Text>
             </View>
 
-            {/* Cast */}
             <View className="mt-4 pt-3 border-t border-white/10">
               <Text className="text-zinc-400 text-xs uppercase tracking-wider font-semibold mb-2">
                 Cast
