@@ -41,7 +41,7 @@ export default function HomePage() {
         <BlurView
           intensity={80}
           tint="dark"
-          blurMethod="dimezisBlurView"
+          blurMethod="dimezisBlurViewSdk31Plus"
           style={{ flex: 1, padding: 16 }}
         >
           <ScrollView
