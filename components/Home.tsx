@@ -17,9 +17,9 @@ export default function HomePage() {
       {/* First Box with Background Image (2/3 height) */}
       <ImageBackground
         source={require("../assets/images/home/demo.jpg")}
-        className="h-2/3 rounded-2xl p-4 justify-end overflow-hidden bg-gray-900"
+        className="h-2/3 rounded-2xl p-4 justify-end overflow-hidden"
         resizeMode="cover"
-        imageStyle={{ opacity: 0.85 }}
+        imageStyle={{ opacity: 0.55 }}
       >
         {/* Bottom Row */}
         <View className="flex-row justify-between items-center w-full">
