@@ -18,7 +18,11 @@ const NUM_COLUMNS = 2;
 const CARD_GAP = 12;
 const HORIZONTAL_PADDING = 20;
 
-export default function Genre() {
+interface GenreProps {
+  onConfirm?: () => void;
+}
+
+export default function Genre({ onConfirm }: GenreProps) {
   const { width: screenWidth } = useWindowDimensions();
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -48,6 +52,7 @@ export default function Genre() {
       return;
     }
     console.log("Selected genres:", Array.from(selected));
+    if (onConfirm) onConfirm();
   };
 
   const canConfirm = selected.size >= MIN_SELECTION;
