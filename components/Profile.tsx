@@ -9,6 +9,10 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
+import HelpAndFeedback from "./HelpAndFeedback";
+import About from "./About";
+import PrivacyPolicy from "./PrivacyPolicy";
+import TermsOfService from "./TermsOfService";
 
 const STATS = [
     { label: "Friends", value: "28" },
@@ -88,7 +92,17 @@ function SettingsMenuItem({ icon, label, iconColor = "#a1a1aa", onPress }: Setti
     );
 }
 
-function SettingsScreen({ onBack }: { onBack: () => void }) {
+function SettingsScreen({
+    onBack,
+    onHelpFeedback,
+    onAbout,
+    onPrivacyPolicy,
+}: {
+    onBack: () => void;
+    onHelpFeedback: () => void;
+    onAbout: () => void;
+    onPrivacyPolicy: () => void;
+}) {
     return (
         <View className="flex-1 bg-black">
             <View className="flex-row items-center px-4 pt-4 pb-2">
@@ -126,6 +140,7 @@ function SettingsScreen({ onBack }: { onBack: () => void }) {
                         icon="lock-closed-outline"
                         label="Privacy"
                         iconColor="#10b981"
+                        onPress={onPrivacyPolicy}
                     />
                     <View className="mx-4 h-[0.5px] bg-white/[0.06]" />
                     <SettingsMenuItem
@@ -141,12 +156,14 @@ function SettingsScreen({ onBack }: { onBack: () => void }) {
                         icon="help-circle-outline"
                         label="Help & Feedback"
                         iconColor="#8b5cf6"
+                        onPress={onHelpFeedback}
                     />
                     <View className="mx-4 h-[0.5px] bg-white/[0.06]" />
                     <SettingsMenuItem
                         icon="information-circle-outline"
                         label="About"
                         iconColor="#6366f1"
+                        onPress={onAbout}
                     />
                 </Card>
 
@@ -164,10 +181,39 @@ function SettingsScreen({ onBack }: { onBack: () => void }) {
 }
 
 export default function Profile() {
-    const [showSettings, setShowSettings] = useState(false);
+    const [subScreen, setSubScreen] = useState<"none" | "settings" | "help" | "about" | "privacy" | "terms">("none");
 
-    if (showSettings) {
-        return <SettingsScreen onBack={() => setShowSettings(false)} />;
+    if (subScreen === "terms") {
+        return <TermsOfService onBack={() => setSubScreen("settings")} />;
+    }
+
+    if (subScreen === "privacy") {
+        return <PrivacyPolicy onBack={() => setSubScreen("settings")} />;
+    }
+
+    if (subScreen === "about") {
+        return <About onBack={() => setSubScreen("settings")} />;
+    }
+
+    if (subScreen === "help") {
+        return (
+            <HelpAndFeedback
+                onBack={() => setSubScreen("settings")}
+                onPrivacyPolicy={() => setSubScreen("privacy")}
+                onTermsOfService={() => setSubScreen("terms")}
+            />
+        );
+    }
+
+    if (subScreen === "settings") {
+        return (
+            <SettingsScreen
+                onBack={() => setSubScreen("none")}
+                onHelpFeedback={() => setSubScreen("help")}
+                onAbout={() => setSubScreen("about")}
+                onPrivacyPolicy={() => setSubScreen("privacy")}
+            />
+        );
     }
 
     return (
@@ -336,7 +382,7 @@ export default function Profile() {
                 </Card>
 
                 <Card className="mt-3">
-                    <TouchableOpacity onPress={() => setShowSettings(true)} activeOpacity={0.6} className="flex-row items-center py-3.5 px-4">
+                    <TouchableOpacity onPress={() => setSubScreen("settings")} activeOpacity={0.6} className="flex-row items-center py-3.5 px-4">
                         <View className="w-9 h-9 rounded-xl bg-white/[0.07] items-center justify-center mr-3">
                             <Ionicons name="settings-outline" size={18} color="#a1a1aa" />
                         </View>
