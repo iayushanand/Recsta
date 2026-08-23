@@ -5,6 +5,8 @@ import {
     Image,
     TouchableOpacity,
     ScrollView,
+    Alert,
+    ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
@@ -13,6 +15,8 @@ import HelpAndFeedback from "./HelpAndFeedback";
 import About from "./About";
 import PrivacyPolicy from "./PrivacyPolicy";
 import TermsOfService from "./TermsOfService";
+import { signOut } from "../lib/auth";
+import type { Session } from "@supabase/supabase-js";
 
 const STATS = [
     { label: "Friends", value: "28" },
@@ -97,12 +101,41 @@ function SettingsScreen({
     onHelpFeedback,
     onAbout,
     onPrivacyPolicy,
+    onSignOut,
+    session,
 }: {
     onBack: () => void;
     onHelpFeedback: () => void;
     onAbout: () => void;
     onPrivacyPolicy: () => void;
+    onSignOut?: () => void;
+    session?: Session | null;
 }) {
+    const [loggingOut, setLoggingOut] = useState(false);
+    const email = session?.user?.email ?? "thisisayushanand@gmail.com";
+    const displayName = session?.user?.user_metadata?.full_name ?? session?.user?.user_metadata?.name ?? null;
+
+    const handleLogout = async () => {
+        Alert.alert("Log Out", "Are you sure you want to sign out?", [
+            { text: "Cancel", style: "cancel" },
+            {
+                text: "Log Out",
+                style: "destructive",
+                onPress: async () => {
+                    setLoggingOut(true);
+                    try {
+                        await signOut();
+                        onSignOut?.();
+                    } catch (e: any) {
+                        Alert.alert("Error", e?.message ?? "Failed to sign out");
+                    } finally {
+                        setLoggingOut(false);
+                    }
+                },
+            },
+        ]);
+    };
+
     return (
         <View className="flex-1 bg-black">
             <View className="flex-row items-center px-4 pt-4 pb-2">
@@ -120,6 +153,19 @@ function SettingsScreen({
                 <Card className="mt-4">
                     <SectionHeader icon="person-outline" title="Account" />
                     <View className="px-4 pb-4">
+                        {displayName && (
+                            <View className="flex-row items-center py-2">
+                                <View className="w-9 h-9 rounded-xl bg-white/[0.07] items-center justify-center mr-3">
+                                    <Ionicons name="person-outline" size={18} color="#8b5cf6" />
+                                </View>
+                                <View className="flex-1">
+                                    <Text className="text-zinc-500 text-xs">Name</Text>
+                                    <Text className="text-zinc-200 text-sm font-medium mt-0.5">
+                                        {displayName}
+                                    </Text>
+                                </View>
+                            </View>
+                        )}
                         <View className="flex-row items-center py-3">
                             <View className="w-9 h-9 rounded-xl bg-white/[0.07] items-center justify-center mr-3">
                                 <Ionicons name="mail-outline" size={18} color="#3b82f6" />
@@ -127,7 +173,7 @@ function SettingsScreen({
                             <View className="flex-1">
                                 <Text className="text-zinc-500 text-xs">Email</Text>
                                 <Text className="text-zinc-200 text-sm font-medium mt-0.5">
-                                    thisisayushanand@gmail.com
+                                    {email}
                                 </Text>
                             </View>
                         </View>
@@ -168,9 +214,20 @@ function SettingsScreen({
                 </Card>
 
                 <View className="mx-3 mt-5 rounded-2xl border border-red-500/20 overflow-hidden">
-                    <TouchableOpacity activeOpacity={0.6} className="py-3.5 px-4 flex-row items-center justify-center gap-2 bg-red-500/[0.08]">
-                        <Ionicons name="log-out-outline" size={20} color="#ef4444" />
-                        <Text className="text-red-400 text-[15px] font-semibold">Log Out</Text>
+                    <TouchableOpacity
+                        onPress={handleLogout}
+                        disabled={loggingOut}
+                        activeOpacity={0.6}
+                        className="py-3.5 px-4 flex-row items-center justify-center gap-2 bg-red-500/[0.08]"
+                    >
+                        {loggingOut ? (
+                            <ActivityIndicator color="#ef4444" />
+                        ) : (
+                            <Ionicons name="log-out-outline" size={20} color="#ef4444" />
+                        )}
+                        <Text className="text-red-400 text-[15px] font-semibold">
+                            {loggingOut ? "Signing out..." : "Log Out"}
+                        </Text>
                     </TouchableOpacity>
                 </View>
 
@@ -180,8 +237,18 @@ function SettingsScreen({
     );
 }
 
-export default function Profile() {
+type ProfileProps = {
+    onSignOut?: () => void;
+    session?: Session | null;
+};
+
+export default function Profile({ onSignOut, session }: ProfileProps) {
     const [subScreen, setSubScreen] = useState<"none" | "settings" | "help" | "about" | "privacy" | "terms">("none");
+
+    const user = session?.user;
+    const displayName = user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? "Ayush Anand";
+    const avatarUrl = user?.user_metadata?.avatar_url ?? user?.user_metadata?.picture ?? null;
+    const email = user?.email;
 
     if (subScreen === "terms") {
         return <TermsOfService onBack={() => setSubScreen("settings")} />;
@@ -212,6 +279,8 @@ export default function Profile() {
                 onHelpFeedback={() => setSubScreen("help")}
                 onAbout={() => setSubScreen("about")}
                 onPrivacyPolicy={() => setSubScreen("privacy")}
+                onSignOut={onSignOut}
+                session={session}
             />
         );
     }
@@ -233,7 +302,11 @@ export default function Profile() {
                                 style={{ borderRadius: 999, padding: 3 }}
                             >
                                 <Image
-                                    source={require("../assets/images/home/profile.jpg")}
+                                    source={
+                                        avatarUrl
+                                            ? { uri: avatarUrl }
+                                            : require("../assets/images/home/profile.jpg")
+                                    }
                                     className="w-24 h-24 rounded-full"
                                     style={{ borderWidth: 3, borderColor: "#000" }}
                                 />
@@ -246,8 +319,11 @@ export default function Profile() {
                     </View>
 
                     <Text className="text-white text-xl font-bold tracking-tight">
-                        Ayush Anand
+                        {displayName}
                     </Text>
+                    {email && (
+                        <Text className="text-zinc-400 text-xs mt-1">{email}</Text>
+                    )}
                     <Text className="text-zinc-300 text-sm mt-2 italic">
                         "Cinema is therapy."
                     </Text>

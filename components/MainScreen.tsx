@@ -4,8 +4,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import BottomBar, { TabType } from "./BottomBar";
 import HomePage from "./Home";
 import Profile from "./Profile";
+import type { Session } from "@supabase/supabase-js";
 
-export default function MainScreen() {
+type MainScreenProps = {
+  onSignOut?: () => void;
+  session?: Session | null;
+};
+
+export default function MainScreen({ onSignOut, session }: MainScreenProps) {
   const [activeTab, setActiveTab] = useState<TabType>("home");
 
   return (
@@ -22,7 +28,7 @@ export default function MainScreen() {
         )}
 
         {activeTab === "profile" && (
-          <Profile />
+          <Profile onSignOut={onSignOut} session={session} />
         )}
       </View>
 

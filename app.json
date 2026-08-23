@@ -14,9 +14,15 @@
     "ios": {
       "supportsTablet": true
     },
-    "android": {},
+    "android": {
+      "package": "com.ayu.recsta"
+    },
     "plugins": [
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-font",
+      "@react-native-google-signin/google-signin",
+      "expo-sqlite",
+      "expo-secure-store"
     ]
   }
 }

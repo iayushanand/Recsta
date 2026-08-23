@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+    Alert,
     FlatList,
     NativeScrollEvent,
     NativeSyntheticEvent,
@@ -22,8 +23,8 @@ interface GetStartedProps {
 
 export default function GetStarted({ onGetStarted }: GetStartedProps) {
     const { width } = useWindowDimensions();
-
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [loading, setLoading] = useState(false);
 
     const handleScrollEnd = (
         event: NativeSyntheticEvent<NativeScrollEvent>
@@ -33,6 +34,29 @@ export default function GetStarted({ onGetStarted }: GetStartedProps) {
         );
 
         setCurrentIndex(index);
+    };
+
+    const handleGooglePress = async () => {
+        if (loading) return;
+        setLoading(true);
+        try {
+            const result = await signInWithGoogle();
+            if (result.success) {
+                // Supabase auth state change will also trigger App.tsx routing,
+                // but we call onGetStarted to move to genre screen immediately
+                if (onGetStarted) onGetStarted();
+            } else {
+                // Don't show alert for user cancellation
+                if (result.code !== "CANCELLED" && result.code !== "SIGN_IN_CANCELLED") {
+                    Alert.alert("Sign-in failed", result.error);
+                }
+            }
+        } catch (err: any) {
+            console.error(err);
+            Alert.alert("Sign-in failed", err?.message ?? "Unknown error");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -62,18 +86,8 @@ export default function GetStarted({ onGetStarted }: GetStartedProps) {
                         >
                             {index === ONBOARDING.length - 1 && (
                                 <GoogleButton
-                                    // onPress={async () => {
-                                    //     try {
-                                    //         await signInWithGoogle();
-                                    //     } catch (err) {
-                                    //         console.error(err);
-                                    //     }
-                                    // }}
-                                    onPress={() => {
-                                        if (onGetStarted) {
-                                            onGetStarted();
-                                        }
-                                    }}
+                                    loading={loading}
+                                    onPress={handleGooglePress}
                                 />
                             )}
                         </BackgroundImage>

@@ -213,8 +213,8 @@ export default function HelpAndFeedback({
                             Can't find what you're looking for? Reach out directly to our support team and we'll get back to you shortly.
                         </Text>
                         <View className="flex-row items-center py-2.5 px-3.5 bg-white/[0.04] rounded-xl border border-white/[0.06]">
-                            <Ionicons name="mail" size={16} color="#3b82f6" className="mr-2" />
-                            <Text className="text-blue-400 text-sm font-medium ml-2">
+                            <Ionicons name="mail" size={16} color="#3b82f6" style={{ marginRight: 8 }} />
+                            <Text className="text-blue-400 text-sm font-medium">
                                 support@recsta.app
                             </Text>
                         </View>
