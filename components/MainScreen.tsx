@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { View, Text } from "react-native";
+import { useState, useEffect } from "react";
+import { View, Text, BackHandler } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BottomBar, { TabType } from "./BottomBar";
 import HomePage from "./Home";
@@ -13,6 +13,20 @@ type MainScreenProps = {
 
 export default function MainScreen({ onSignOut, session }: MainScreenProps) {
   const [activeTab, setActiveTab] = useState<TabType>("home");
+
+  // Back from Profile/Message should go to Home, not exit or genre
+  // Profile's own BackHandler (for settings/help/etc) runs first (LIFO) and will consume if needed
+  useEffect(() => {
+    const onBack = () => {
+      if (activeTab === "profile" || activeTab === "message") {
+        setActiveTab("home");
+        return true; // consumed - go to home
+      }
+      return false; // on home, let App handle double-press to exit
+    };
+    const sub = BackHandler.addEventListener("hardwareBackPress", onBack);
+    return () => sub.remove();
+  }, [activeTab]);
 
   return (
     <SafeAreaView className="flex-1 bg-black" edges={["top", "left", "right"]}>

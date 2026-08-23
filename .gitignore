@@ -26,3 +26,6 @@ android
 !.env.example
 
 llm.txt
+
+**/__pycache__
+env

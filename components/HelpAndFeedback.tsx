@@ -5,16 +5,12 @@ import {
     TouchableOpacity,
     ScrollView,
     LayoutAnimation,
-    Platform,
-    UIManager,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 
-if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+// LayoutAnimation is supported on New Architecture without experimental flag - no-op guard removed
 
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
     return (

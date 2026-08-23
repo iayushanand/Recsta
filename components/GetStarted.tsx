@@ -4,11 +4,11 @@ import {
     FlatList,
     NativeScrollEvent,
     NativeSyntheticEvent,
-    SafeAreaView,
     StyleSheet,
     View,
     useWindowDimensions,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ONBOARDING } from "../constants/onboarding";
 import { signInWithGoogle } from "../lib/auth";

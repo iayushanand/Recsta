@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FlatList,
   Image,
@@ -7,11 +7,14 @@ import {
   View,
   useWindowDimensions,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { GENRES, GenreItem } from "../constants/genres";
+import { supabase } from "../lib/supabase";
+import { getUserGenres, setUserGenres } from "../lib/profile";
 
 const MIN_SELECTION = 3;
 const NUM_COLUMNS = 2;
@@ -25,6 +28,24 @@ interface GenreProps {
 export default function Genre({ onConfirm }: GenreProps) {
   const { width: screenWidth } = useWindowDimensions();
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const genres = await getUserGenres(user.id);
+          if (genres.length > 0) setSelected(new Set(genres));
+        }
+      } catch (e) {
+        console.warn('[Genre] load error', e);
+      } finally {
+        setInitialLoading(false);
+      }
+    })();
+  }, []);
 
   const cardWidth =
     (screenWidth - HORIZONTAL_PADDING * 2 - CARD_GAP * (NUM_COLUMNS - 1)) /
@@ -43,7 +64,7 @@ export default function Genre({ onConfirm }: GenreProps) {
     });
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (selected.size < MIN_SELECTION) {
       Alert.alert(
         "Not enough genres",
@@ -51,7 +72,33 @@ export default function Genre({ onConfirm }: GenreProps) {
       );
       return;
     }
-    console.log("Selected genres:", Array.from(selected));
+    const genreIds = Array.from(selected);
+    console.log("Selected genres:", genreIds);
+    setLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await setUserGenres(user.id, genreIds);
+        console.log('[Genre] saved to Supabase for', user.email);
+      } else {
+        console.warn('[Genre] no user, saving locally only');
+      }
+    } catch (e: any) {
+      console.warn('[Genre] save error', e?.message);
+      const msg = e?.message ?? '';
+      const isMissingTable = msg.includes('schema cache') || msg.includes('PGRST205') || msg.includes('user_genres');
+      if (isMissingTable) {
+        Alert.alert(
+          'Database not set up',
+          'Table public.user_genres not found.\n\n1. Open Supabase Dashboard > SQL Editor\n2. Paste the contents of supabase/schema.sql (in your project root)\n3. Click Run\n\nThen try again.',
+        );
+      } else {
+        Alert.alert('Save failed', msg || 'Could not save genres.');
+      }
+      setLoading(false);
+      return;
+    }
+    setLoading(false);
     if (onConfirm) onConfirm();
   };
 
@@ -118,19 +165,22 @@ export default function Genre({ onConfirm }: GenreProps) {
 
         <Pressable
           onPress={handleConfirm}
+          disabled={loading || initialLoading}
           className={`ml-4 h-12 w-12 items-center justify-center rounded-full ${
-            canConfirm
+            canConfirm && !loading
               ? "bg-violet-500"
               : "border border-white/10 bg-white/10"
           }`}
         >
-          <Text
-            className={`text-[22px] font-bold ${
-              canConfirm ? "text-white" : "text-white/25"
-            }`}
-          >
-            ✓
-          </Text>
+          {loading ? <ActivityIndicator color="#fff" /> : (
+            <Text
+              className={`text-[22px] font-bold ${
+                canConfirm ? "text-white" : "text-white/25"
+              }`}
+            >
+              ✓
+            </Text>
+          )}
         </Pressable>
       </View>
 

@@ -1,7 +1,7 @@
 import "./global.css";
 
-import { useEffect, useState, useCallback } from "react";
-import { BackHandler, View, ActivityIndicator } from "react-native";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { BackHandler, View, ActivityIndicator, ToastAndroid, Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
@@ -13,6 +13,7 @@ import GetStarted from "components/GetStarted";
 import Genre from "components/Genre";
 
 import { supabase } from "./lib/supabase";
+import { ensureProfile } from "./lib/profile";
 import type { Session } from "@supabase/supabase-js";
 
 SplashScreen.preventAutoHideAsync();
@@ -34,13 +35,13 @@ export default function App() {
   // Initialize Supabase session and subscribe to auth changes
   useEffect(() => {
     // Get initial session (handles app cold start with persisted session)
-    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+    supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
       setSession(initialSession);
       setAuthInitialized(true);
-      // Auto-route if already signed in
-      if (initialSession) {
-        // If user already has a session, skip onboarding
-        // You can change this to "genre" if you want first-time users to pick genres
+      if (initialSession?.user) {
+        // Ensure profile exists in DB (handles first login)
+        ensureProfile(initialSession.user).catch(() => {});
+        // Auto-route if already signed in
         setCurrentScreen("main");
       }
       if (initialSession) console.log("[App] initial session", initialSession.user.email);
@@ -48,11 +49,12 @@ export default function App() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, newSession) => {
+    } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       console.log("[App] auth event", event, newSession?.user?.email);
       setSession(newSession);
 
-      if (event === "SIGNED_IN" && newSession) {
+      if (event === "SIGNED_IN" && newSession?.user) {
+        await ensureProfile(newSession.user).catch(() => {});
         // After native Google sign-in, move to genre step
         // If currentScreen is still onboarding, advance to genre
         setCurrentScreen((prev) => (prev === "get-started" ? "genre" : prev));
@@ -65,21 +67,33 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Handle back button with auth awareness
+  // Handle back button - genre is onboarding, main should exit (not go to genre)
+  const lastBackPress = useRef(0);
   useEffect(() => {
     const backAction = () => {
       if (currentScreen === "genre") {
-        // If signed in, back from genre should NOT go to get-started (logout would be needed)
-        // Allow back only if not signed in
+        // Genre only shown right after login - don't go back to login if signed in
         if (session) {
-          return false; // let system handle or stay
+          return false; // system back -> exit app
         }
         setCurrentScreen("get-started");
         return true;
       } else if (currentScreen === "main") {
-        setCurrentScreen("genre");
-        return true;
+        // Home/Messages/Profile are top-level - back should exit, not go to genre selector
+        // Profile's own BackHandler (if subScreen open) will intercept first and pop its stack
+        if (Platform.OS === "android") {
+          const now = Date.now();
+          if (now - lastBackPress.current < 2000) {
+            BackHandler.exitApp();
+            return true;
+          }
+          ToastAndroid.show("Press back again to exit", ToastAndroid.SHORT);
+          lastBackPress.current = now;
+          return true;
+        }
+        return false;
       }
+      // get-started or other - let system handle (exit)
       return false;
     };
 
